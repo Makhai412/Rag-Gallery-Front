@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, Button } from 'flowbite-react';
-import LogIn from '../../pages/login/LogIn'
+import LogIn from '../../pages/login/LogIn';
 import { Link } from 'react-router-dom';
 
 const NavbarComponent = () => {

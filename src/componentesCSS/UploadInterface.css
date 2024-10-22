@@ -1,0 +1,74 @@
+.upload-interface {
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.upload-interface h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.upload-section,
+.question-section {
+    margin-bottom: 20px;
+}
+
+.file-upload-label,
+.question-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.file-upload-input,
+.question-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.question-input {
+    height: 100px;
+    resize: none;
+}
+
+.submit-button {
+    padding: 10px 20px;
+    font-size: 18px;
+    color: white;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button:disabled {
+    background-color: #cccccc;
+}
+
+.submit-button:hover {
+    background-color: #45a049;
+}
+
+.message {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}
