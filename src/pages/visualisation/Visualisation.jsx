@@ -6,14 +6,14 @@ const Visualisation = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [editFormData, setEditFormData] = useState({ name: '', email: '' });
+  const [editFormData, setEditFormData] = useState({ role: '' });
   const [notification, setNotification] = useState({ message: '', visible: false });
 
   useEffect(() => {
     setUsers([
-      { id: 1, name: 'John Doe', email: 'john@example.com', active: true },
-      { id: 2, name: 'Jane Smith', email: 'jane@example.com', active: false },
-      { id: 3, name: 'Alice Brown', email: 'alice@example.com', active: true },
+      { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Usuario', active: true },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Administrador', active: false },
+      { id: 3, name: 'Alice Brown', email: 'alice@example.com', role: 'Usuario', active: true },
     ]);
   }, []);
 
@@ -23,7 +23,7 @@ const Visualisation = () => {
       return;
     }
     setSelectedUser(user);
-    setEditFormData({ name: user.name, email: user.email });
+    setEditFormData({ role: user.role });
     setIsEditModalOpen(true);
   };
 
@@ -40,7 +40,7 @@ const Visualisation = () => {
   const handleEditSubmit = () => {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
-        user.id === selectedUser.id ? { ...user, ...editFormData } : user
+        user.id === selectedUser.id ? { ...user, role: editFormData.role } : user
       )
     );
     closeEditModal();
@@ -69,7 +69,7 @@ const Visualisation = () => {
     setNotification({ message, visible: true });
     setTimeout(() => {
       closeNotification();
-    }, 4000); 
+    }, 4000);
   };
 
   const closeNotification = () => {
@@ -82,14 +82,13 @@ const Visualisation = () => {
         <div className="fixed top-4 right-4 bg-blue-300 text-black p-4 rounded shadow-md z-50 transition-opacity duration-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              {/* Icono de información */}
               <svg className="w-6 h-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9z" />
               </svg>
               {notification.message}
             </div>
             <button onClick={closeNotification} className="ml-4 text-gray-700 hover:text-gray-900">
-              &times; {/* Icono de cerrar */}
+              &times;
             </button>
           </div>
         </div>
@@ -100,7 +99,8 @@ const Visualisation = () => {
             <th className="border border-gray-300 px-4 py-2">ID</th>
             <th className="border border-gray-300 px-4 py-2">Nombre</th>
             <th className="border border-gray-300 px-4 py-2">Correo</th>
-            <th className="border border-gray-300 px-4 py-2">Activo/Inactivo</th>
+            <th className="border border-gray-300 px-4 py-2">Rol</th>
+            <th className="border border-gray-300 px-4 py-2">Estado</th>
             <th className="border border-gray-300 px-4 py-2">Acciones</th>
           </tr>
         </thead>
@@ -110,6 +110,7 @@ const Visualisation = () => {
               <td className="border border-gray-300 px-4 py-2">{user.id}</td>
               <td className="border border-gray-300 px-4 py-2">{user.name}</td>
               <td className="border border-gray-300 px-4 py-2">{user.email}</td>
+              <td className="border border-gray-300 px-4 py-2">{user.role}</td>
               <td className="border border-gray-300 px-4 py-2">
                 {user.active ? (
                   <span className="text-green-500 font-semibold">Activo</span>
@@ -140,29 +141,22 @@ const Visualisation = () => {
         </tbody>
       </table>
 
-      {/* Modal para editar usuario */}
+      {/* Modal para editar el rol del usuario */}
       <Modal
-        title="Editar Usuario"
+        title="Editar Rol"
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
       >
         <div>
-          <input
-            type="text"
-            name="name"
-            placeholder="Nombre"
-            value={editFormData.name}
-            onChange={handleEditChange}
-            className="border rounded px-2 py-1 w-full mb-2"
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Correo electrónico"
-            value={editFormData.email}
+          <select
+            name="role"
+            value={editFormData.role}
             onChange={handleEditChange}
             className="border rounded px-2 py-1 w-full mb-4"
-          />
+          >
+            <option value="Usuario">Usuario</option>
+            <option value="Administrador">Administrador</option>
+          </select>
           <div className="flex justify-center mt-4">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2"

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import axios from "axios";
+import Notification from "./Notification";
 
 const Chat = () => {
     const [messages, setMessages] = useState([
@@ -8,6 +9,7 @@ const Chat = () => {
     const [inputValue, setInputValue] = useState("");
     const [isSending, setIsSending] = useState(false);
     const [file, setFile] = useState(null);
+    const [notification, setNotification] = useState({ visible: false, message: '', success: true });
     const fileInputRef = useRef(null);
 
     const handleSendMessage = async (e) => {
@@ -66,21 +68,13 @@ const Chat = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            const systemResponse = {
-                text: `Archivo "${file.name}" subido con éxito.`,
-                time: timestamp,
-                sender: 'system'
-            };
-            setMessages((prevMessages) => [...prevMessages, systemResponse]);
+            // Mostrar notificación de éxito (fondo azul)
+            setNotification({ visible: true, message: `Archivo "${file.name}" subido con éxito.`, success: true });
             setFile(null);
         } catch (error) {
             console.error("Error al subir el archivo:", error);
-            const errorMessage = {
-                text: "Hubo un error al subir el archivo. Por favor, inténtalo de nuevo.",
-                time: timestamp,
-                sender: 'system'
-            };
-            setMessages((prevMessages) => [...prevMessages, errorMessage]);
+            // Mostrar notificación de error (fondo rojo)
+            setNotification({ visible: true, message: "Hubo un error al subir el archivo. Por favor, inténtalo de nuevo.", success: false });
         } finally {
             setIsSending(false);
         }
@@ -88,6 +82,10 @@ const Chat = () => {
 
     const handleFileChange = (event) => {
         setFile(event.target.files[0]);
+    };
+
+    const closeNotification = () => {
+        setNotification({ visible: false, message: '', success: true });
     };
 
     return (
@@ -113,7 +111,7 @@ const Chat = () => {
                             </div>
                         ) : (
                             <>
-                                <img className="w-8 h-8 rounded-full" src="/docs/images/people/system-avatar.jpg" alt="System Avatar"/>
+                                <img className="w-8 h-8 rounded-full" src="https://i.ibb.co/1XrCBKP/usuario.png" alt="System Avatar"/>
                                 <div className="flex flex-col gap-1 w-full max-w-[320px]">
                                     <div className="flex items-center space-x-2 rtl:space-x-reverse">
                                         <span className="text-sm font-semibold text-gray-900 dark:text-white">Sistema</span>
@@ -143,6 +141,9 @@ const Chat = () => {
                     {isSending ? "Enviando..." : "Enviar Mensaje"}
                 </button>
             </form>
+
+            {/* Notificación emergente */}
+            {notification.visible && <Notification message={notification.message} success={notification.success} onClose={closeNotification} />}
         </div>
     );
 };
