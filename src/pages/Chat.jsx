@@ -37,7 +37,7 @@ const Chat = () => {
                 query: inputValue
             });
             const systemResponse = {
-                text: response.data.answer,
+                text: response.data,
                 time: timestamp,
                 sender: 'system'
             };
@@ -61,7 +61,7 @@ const Chat = () => {
         formData.append('file', file);
 
         try {
-            await axios.post("http://127.0.0.1:8001/upload", formData, {
+            await axios.post("http://127.0.0.1:8001/save-document/", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
