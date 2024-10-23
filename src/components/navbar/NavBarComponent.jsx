@@ -51,6 +51,9 @@ const NavbarComponent = () => {
                             <li>
                             <Link to="/aboutus" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">About Us</Link>
                             </li>
+                            <li>
+                            <Link to="/visualisation" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">Users Visualisation</Link>
+                            </li>
                         </ul>
                     </div>
                 </div>
