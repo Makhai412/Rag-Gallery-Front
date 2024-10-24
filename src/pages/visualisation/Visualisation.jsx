@@ -1,27 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Asegúrate de tener axios instalado
 import Modal from './ModalConfirm';
 
 const Visualisation = () => {
   const [users, setUsers] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editFormData, setEditFormData] = useState({ role: '' });
   const [notification, setNotification] = useState({ message: '', visible: false });
 
+  // Fetch data from backend when the component mounts
   useEffect(() => {
-    setUsers([
-      { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Usuario', active: true },
-      { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Administrador', active: false },
-      { id: 3, name: 'Alice Brown', email: 'alice@example.com', role: 'Usuario', active: true },
-    ]);
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('http://localhost:8001/get-users/');
+        console.log(response.data);
+        setUsers(response.data); // Set the data from the response
+        } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   const openEditModal = (user) => {
-    if (!user.active) {
-      showNotification('No se puede editar porque el usuario está inactivo.');
-      return;
-    }
     setSelectedUser(user);
     setEditFormData({ role: user.role });
     setIsEditModalOpen(true);
@@ -37,32 +40,21 @@ const Visualisation = () => {
     setEditFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleEditSubmit = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === selectedUser.id ? { ...user, role: editFormData.role } : user
-      )
-    );
-    closeEditModal();
-  };
+  const handleEditSubmit = async () => {
+    try {
+      await axios.patch(`http://localhost:8001/change-role/${selectedUser.id}`, {
+        role: editFormData.role,
+      });
 
-  const openConfirmModal = (user) => {
-    setSelectedUser(user);
-    setIsConfirmModalOpen(true);
-  };
-
-  const closeConfirmModal = () => {
-    setIsConfirmModalOpen(false);
-    setSelectedUser(null);
-  };
-
-  const handleToggleActive = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === selectedUser.id ? { ...user, active: !user.active } : user
-      )
-    );
-    closeConfirmModal();
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === selectedUser.id ? { ...user, role: editFormData.role } : user
+        )
+      );
+      closeEditModal();
+    } catch (error) {
+      console.error('Error updating user role:', error);
+    }
   };
 
   const showNotification = (message) => {
@@ -98,42 +90,24 @@ const Visualisation = () => {
           <tr className="bg-gray-200">
             <th className="border border-gray-300 px-4 py-2">ID</th>
             <th className="border border-gray-300 px-4 py-2">Nombre</th>
-            <th className="border border-gray-300 px-4 py-2">Correo</th>
             <th className="border border-gray-300 px-4 py-2">Rol</th>
-            <th className="border border-gray-300 px-4 py-2">Estado</th>
             <th className="border border-gray-300 px-4 py-2">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user.id} className="text-center">
-              <td className="border border-gray-300 px-4 py-2">{user.id}</td>
-              <td className="border border-gray-300 px-4 py-2">{user.name}</td>
-              <td className="border border-gray-300 px-4 py-2">{user.email}</td>
-              <td className="border border-gray-300 px-4 py-2">{user.role}</td>
+            <tr key={user.uid} className="text-center">
+              <td className="border border-gray-300 px-4 py-2">{user.uid}</td>
+              <td className="border border-gray-300 px-4 py-2">{user.username}</td>
               <td className="border border-gray-300 px-4 py-2">
-                {user.active ? (
-                  <span className="text-green-500 font-semibold">Activo</span>
-                ) : (
-                  <span className="text-red-500 font-semibold">Inactivo</span>
-                )}
+                {user.is_admin ? 'Administrador' : 'Usuario'}
               </td>
               <td className="border border-gray-300 px-4 py-2">
                 <button
                   onClick={() => openEditModal(user)}
-                  className={`${
-                    user.active ? 'bg-green-500 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
-                  } text-white px-2 py-1 rounded mr-2`}
+                  className="bg-green-500 hover:bg-green-700 text-white px-2 py-1 rounded"
                 >
                   Editar
-                </button>
-                <button
-                  onClick={() => openConfirmModal(user)}
-                  className={`${
-                    user.active ? 'bg-blue-500 hover:bg-blue-700' : 'bg-gray-500'
-                  } text-white px-4 py-1 rounded w-24`}
-                >
-                  {user.active ? 'Inactivar' : 'Activar'}
                 </button>
               </td>
             </tr>
@@ -141,67 +115,32 @@ const Visualisation = () => {
         </tbody>
       </table>
 
-      {/* Modal para editar el rol del usuario */}
-      <Modal
-        title="Editar Rol"
-        isOpen={isEditModalOpen}
-        onClose={closeEditModal}
-      >
-        <div>
-          <select
-            name="role"
-            value={editFormData.role}
-            onChange={handleEditChange}
-            className="border rounded px-2 py-1 w-full mb-4"
-          >
-            <option value="Usuario">Usuario</option>
-            <option value="Administrador">Administrador</option>
-          </select>
-          <div className="flex justify-center mt-4">
+      {/* Modal for editing role */}
+      {isEditModalOpen && (
+        <Modal onClose={closeEditModal}>
+          <h2 className="text-xl font-semibold">Editar Rol del Usuario</h2>
+          <form onSubmit={handleEditSubmit} className="mt-4">
+            <label className="block mb-2">
+              Rol:
+              <select
+                name="role"
+                value={editFormData.role}
+                onChange={handleEditChange}
+                className="block w-full mt-1 p-2 border rounded"
+              >
+                <option value="Usuario">Usuario</option>
+                <option value="Administrador">Administrador</option>
+              </select>
+            </label>
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2"
-              onClick={handleEditSubmit}
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded mt-4"
             >
-              Guardar
+              Guardar Cambios
             </button>
-            <button
-              className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded"
-              onClick={closeEditModal}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Modal para confirmar activación/inactivación */}
-      <Modal
-        title={`¿Está seguro de ${selectedUser?.active ? 'inactivar' : 'activar'} al usuario?`}
-        isOpen={isConfirmModalOpen}
-        onClose={closeConfirmModal}
-      >
-        <div className="text-center">
-          <p>
-            {`El usuario ${selectedUser?.name} será ${
-              selectedUser?.active ? 'inactivado' : 'activado'
-            }.`}
-          </p>
-          <div className="flex justify-center mt-4">
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2"
-              onClick={handleToggleActive}
-            >
-              Aceptar
-            </button>
-            <button
-              className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded"
-              onClick={closeConfirmModal}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      </Modal>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };
