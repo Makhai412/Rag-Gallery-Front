@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { Modal, Button } from 'flowbite-react';
 import LogIn from '../../pages/login/LogIn';
 import Register from '../../pages/register/Register'; // Nuevo componente de registro
@@ -7,7 +8,19 @@ import { Link } from 'react-router-dom';
 const NavbarComponent = () => {
     const [openLoginModal, setOpenLoginModal] = useState(false);
     const [openRegisterModal, setOpenRegisterModal] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Simulación de estado de autenticación
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado de autenticación
+    const [username, setUsername] = useState(''); // Almacenar nombre de usuario
+
+
+
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setIsLoggedIn(false);
+            setUsername('');
+        }
+    }, []);
 
     const closeLoginModal = () => {
         setOpenLoginModal(false);
@@ -17,15 +30,16 @@ const NavbarComponent = () => {
         setOpenRegisterModal(false);
     };
 
-    const handleLogin = () => {
-        // Aquí iría tu lógica para iniciar sesión
-        setIsLoggedIn(true);
-        closeLoginModal();
+    const handleLogin = (user) => {
+        setUsername(user); // Establecer el nombre de usuario
+        setIsLoggedIn(true); // Cambiar el estado de autenticación
+        closeLoginModal(); // Cerrar modal de login
     };
 
     const handleLogout = () => {
-        // Aquí iría tu lógica para cerrar sesión
-        setIsLoggedIn(false);
+        localStorage.removeItem('token'); // Eliminar el token de localStorage
+        setIsLoggedIn(false); // Cambiar el estado de autenticación
+        setUsername(''); // Limpiar el nombre de usuario
     };
 
     return (
@@ -36,21 +50,30 @@ const NavbarComponent = () => {
                         <img src="https://i.ibb.co/tD1648m/Rag-Gallery-Logo.png" className="h-16" alt="Gallery Logo" />
                     </a>
                     <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-                        {!isLoggedIn ? (
+                        {isLoggedIn ? (
+                            <>
+                                <span className="flex items-center text-blue-600 font-bold text-lg p-2 rounded-md transition duration-200 ease-in-out">
+                                    Hola! {username}
+                                </span>
+
+
+                                <Button
+                                    onClick={handleLogout}
+                                    className="py-1 px-2 text-white font-bold rounded-full bg-red-600 hover:bg-red-700 shadow-lg transition duration-200 ease-in-out"
+                                    style={{ backgroundColor: 'rgba(239, 68, 68)', color: 'white' }} // Asegúrate de que el color es rojo
+                                >
+                                    Logout
+                                </Button>
+
+
+                            </>
+                        ) : (
                             <Button
                                 onClick={() => setOpenLoginModal(true)}
                                 className="py-0 px-1 bg-blue-700 text-white rounded-lg hover:bg-blue-800 hover:shadow-lg dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                                 color="primary"
                             >
                                 Login
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={handleLogout}
-                                className="py-0 px-1 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:shadow-lg"
-                                color="primary"
-                            >
-                                Logout
                             </Button>
                         )}
                     </div>
@@ -75,7 +98,7 @@ const NavbarComponent = () => {
                 <Modal show={openLoginModal} size="md" popup onClose={closeLoginModal}>
                     <Modal.Header />
                     <Modal.Body>
-                        <LogIn closeModal={closeLoginModal} />
+                        <LogIn closeModal={closeLoginModal} onLogin={handleLogin} /> {/* Pasar función de inicio de sesión */}
                         <p className="text-center mt-4">
                             ¿No tienes una cuenta?{" "}
                             <button

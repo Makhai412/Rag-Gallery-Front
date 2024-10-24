@@ -51,16 +51,7 @@ const Register = ({ closeModal }) => {
                 <div className="flex space-x-3">
                     <label className="flex items-center">
                         <input
-                            type="radio"
-                            value="user"
-                            checked={role === 'user'}
-                            onChange={() => setRole('user')}
-                        />
-                        <span className="ml-2">Usuario</span>
-                    </label>
-                    <label className="flex items-center">
-                        <input
-                            type="radio"
+                            type="checkbox"
                             value="admin"
                             checked={role === 'admin'}
                             onChange={() => setRole('admin')}

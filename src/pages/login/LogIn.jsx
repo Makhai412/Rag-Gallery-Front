@@ -1,22 +1,27 @@
 import { useState } from 'react';
 import api from '../../services/Api'; // Importa el archivo api.js
 
-const LogIn = ({ closeModal }) => {
-    const [email, setEmail] = useState('');
+const LogIn = ({ closeModal, onLogin }) => {
+    const [username, setName] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
 
     const handleLogin = async () => {
         try {
-            const response = await api.post('/auth/login', { email, password });
-            const { token } = response.data;
-
+            const response = await api.post('/login/', { username, password });
+            const { access_token } = response.data;
+    
             // Guardar el token en localStorage
-            localStorage.setItem('token', token);
-
-            // Lógica para cambiar el estado de login
+            localStorage.setItem('token', access_token);
+    
+            // Llamar a la función onLogin para pasar el nombre de usuario al Navbar
+            onLogin(username);
+    
+            // Cerrar el modal
             closeModal();
-            window.location.reload(); // Refrescar la página o manejar el estado en tu app
+            
+            // No recargar la página, simplemente actualizar el estado
+            // Puedes agregar lógica aquí para manejar el cambio de usuario
         } catch (err) {
             setError('Credenciales incorrectas, inténtalo de nuevo.');
         }
@@ -25,12 +30,13 @@ const LogIn = ({ closeModal }) => {
     return (
         <div className="space-y-6">
             <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
                 <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={username}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full mt-1 p-2 border rounded-md"
                     required
                 />
