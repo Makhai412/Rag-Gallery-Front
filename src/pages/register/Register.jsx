@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import api from '../../services/Api';
 
-const Register = ({ closeModal }) => {
+const Register = ({ closeModal, onRegister }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('user'); // Valores: 'admin' o 'user'
@@ -10,13 +10,15 @@ const Register = ({ closeModal }) => {
     const handleRegister = async () => {
         try {
             const response = await api.post('/sign-up', { username, password, role });
+            const { access_token } = response.data;
 
             // Manejar el registro exitoso, por ejemplo, iniciar sesión automáticamente
-            const { token } = response.data;
-            localStorage.setItem('token', token);
+            localStorage.setItem('token', access_token);
+            localStorage.setItem('username', username);
+
+            onRegister(username);
 
             closeModal();
-            window.location.reload(); // Refrescar la página o manejar el estado en tu app
         } catch (err) {
             setError('Hubo un error al registrar el usuario.');
         }

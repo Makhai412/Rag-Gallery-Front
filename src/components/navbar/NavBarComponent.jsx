@@ -16,11 +16,23 @@ const NavbarComponent = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (!token) {
+        const storedUsername = localStorage.getItem('username');
+        console.log(storedUsername);
+    
+        if (token) {
+            // Si el token existe, considera al usuario como autenticado
+            setIsLoggedIn(true);
+            // Si almacenas el username en localStorage o dentro del token, puedes actualizar el nombre de usuario
+            if (storedUsername) {
+                setUsername(storedUsername);
+            }
+        } else {
+            // Si no hay token, el usuario no está logueado
             setIsLoggedIn(false);
             setUsername('');
         }
-    }, []);
+    }, []); // El array vacío asegura que esto solo se ejecute al montar el componente
+    
 
     const closeLoginModal = () => {
         setOpenLoginModal(false);
@@ -36,8 +48,15 @@ const NavbarComponent = () => {
         closeLoginModal(); // Cerrar modal de login
     };
 
+    const handleRegister = (user) => {
+        setUsername(user); 
+        setIsLoggedIn(true); 
+        closeRegisterModal(); 
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token'); // Eliminar el token de localStorage
+        localStorage.removeItem('username'); // Eliminar el token de localStorage
         setIsLoggedIn(false); // Cambiar el estado de autenticación
         setUsername(''); // Limpiar el nombre de usuario
     };
@@ -121,7 +140,7 @@ const NavbarComponent = () => {
                 <Modal show={openRegisterModal} size="md" popup onClose={closeRegisterModal}>
                     <Modal.Header />
                     <Modal.Body>
-                        <Register closeModal={closeRegisterModal} />
+                        <Register closeModal={closeRegisterModal} onRegister={handleRegister} />
                     </Modal.Body>
                     <Modal.Footer />
                 </Modal>

@@ -13,6 +13,8 @@ const LogIn = ({ closeModal, onLogin }) => {
     
             // Guardar el token en localStorage
             localStorage.setItem('token', access_token);
+            localStorage.setItem('username', username);
+
     
             // Llamar a la función onLogin para pasar el nombre de usuario al Navbar
             onLogin(username);
@@ -20,8 +22,6 @@ const LogIn = ({ closeModal, onLogin }) => {
             // Cerrar el modal
             closeModal();
             
-            // No recargar la página, simplemente actualizar el estado
-            // Puedes agregar lógica aquí para manejar el cambio de usuario
         } catch (err) {
             setError('Credenciales incorrectas, inténtalo de nuevo.');
         }
