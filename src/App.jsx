@@ -7,6 +7,7 @@ function App() {
     <main>
       <NavbarComponent />
       <AppRoutes />
+
     </main>
   );
 }
