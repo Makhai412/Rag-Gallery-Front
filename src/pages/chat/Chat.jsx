@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import Notification from "./Notification";
 
@@ -11,9 +11,21 @@ const Chat = () => {
     const [file, setFile] = useState(null);
     const [notification, setNotification] = useState({ visible: false, message: '', success: true });
     const fileInputRef = useRef(null);
+    
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        setIsLoggedIn(!!token); 
+    }, []);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
+        if (!isLoggedIn) {
+            setNotification({ visible: true, message: "Por favor inicia sesión para poder acceder al chat", success: false });
+            return;
+        }
+
         if (isSending || inputValue.trim() === "") return;
 
         const timestamp = new Date().toLocaleTimeString();
@@ -22,6 +34,11 @@ const Chat = () => {
 
     const handleSendFile = async (e) => {
         e.preventDefault();
+        if (!isLoggedIn) {
+            setNotification({ visible: true, message: "Por favor inicia sesión para poder acceder al chat", success: false });
+            return;
+        }
+
         if (isSending || !file) return;
 
         const timestamp = new Date().toLocaleTimeString();
@@ -40,7 +57,7 @@ const Chat = () => {
             });
             const systemResponse = {
                 text: response.data,
-                time: timestamp,
+                time: new Date().toLocaleTimeString(),
                 sender: 'system'
             };
             setMessages((prevMessages) => [...prevMessages, systemResponse]);
@@ -48,7 +65,7 @@ const Chat = () => {
             console.error("Error al obtener la respuesta del sistema:", error);
             const errorMessage = {
                 text: "Hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo.",
-                time: timestamp,
+                time: new Date().toLocaleTimeString(),
                 sender: 'system'
             };
             setMessages((prevMessages) => [...prevMessages, errorMessage]);
@@ -68,12 +85,10 @@ const Chat = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            // Mostrar notificación de éxito (fondo azul)
             setNotification({ visible: true, message: `Archivo "${file.name}" subido con éxito.`, success: true });
             setFile(null);
         } catch (error) {
             console.error("Error al subir el archivo:", error);
-            // Mostrar notificación de error (fondo rojo)
             setNotification({ visible: true, message: "Hubo un error al subir el archivo. Por favor, inténtalo de nuevo.", success: false });
         } finally {
             setIsSending(false);
@@ -98,32 +113,7 @@ const Chat = () => {
                 }}>
                 {messages.map((message, index) => (
                     <div key={index} className={`flex items-start gap-2.5 mb-2 ${message.sender === 'user' ? 'justify-end' : ''}`}>
-                        {message.sender === 'user' ? (
-                            <div className="flex flex-col gap-1 w-full max-w-[320px]">
-                                <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">Tú</span>
-                                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">{message.time}</span>
-                                </div>
-                                <div className="flex flex-col leading-1.5 p-4 border-blue-600 bg-blue-200 rounded-e-xl rounded-es-xl dark:bg-gray-700">
-                                    <p className="text-sm font-normal text-gray-900 dark:text-white">{message.text}</p>
-                                </div>
-                                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span>
-                            </div>
-                        ) : (
-                            <>
-                                <img className="w-8 h-8 rounded-full" src="https://i.ibb.co/1XrCBKP/usuario.png" alt="System Avatar"/>
-                                <div className="flex flex-col gap-1 w-full max-w-[320px]">
-                                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">Sistema</span>
-                                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">{message.time}</span>
-                                    </div>
-                                    <div className="flex flex-col leading-1.5 p-4 border-gray-600 bg-gray-200 rounded-e-xl rounded-es-xl dark:bg-gray-700">
-                                        <p className="text-sm font-normal text-gray-900 dark:text-white">{message.text}</p>
-                                    </div>
-                                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span>
-                                </div>
-                            </>
-                        )}
+                        {/* Renderización de mensajes */}
                     </div>
                 ))}
             </div>
@@ -135,8 +125,13 @@ const Chat = () => {
                 <button onClick={handleSendFile} className="ml-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700" disabled={isSending || !file}>
                     {isSending ? "Enviando..." : "Enviar Archivo"}
                 </button>
-                <input type="text" className="flex-1 p-2 border border-gray-300 rounded-lg ml-2" value={inputValue} onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Escribe un mensaje..." disabled={isSending}/>
+                <input 
+                    type="text" 
+                    className="flex-1 p-2 border border-gray-300 rounded-lg ml-2" 
+                    value={inputValue} 
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Escribe un mensaje..."
+                />
                 <button onClick={handleSendMessage} className="ml-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700" disabled={isSending}>
                     {isSending ? "Enviando..." : "Enviar Mensaje"}
                 </button>
