@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 import { Modal, Button } from 'flowbite-react';
 import LogIn from '../../pages/login/LogIn';
 import Register from '../../pages/register/Register'; // Nuevo componente de registro
@@ -8,11 +8,10 @@ import { Link } from 'react-router-dom';
 const NavbarComponent = () => {
     const [openLoginModal, setOpenLoginModal] = useState(false);
     const [openRegisterModal, setOpenRegisterModal] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado de autenticación
-    const [username, setUsername] = useState(''); // Almacenar nombre de usuario
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
 
-
-
+    
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -32,33 +31,29 @@ const NavbarComponent = () => {
             setUsername('');
         }
     }, []); // El array vacío asegura que esto solo se ejecute al montar el componente
-    
 
-    const closeLoginModal = () => {
-        setOpenLoginModal(false);
-    };
 
-    const closeRegisterModal = () => {
-        setOpenRegisterModal(false);
-    };
+    const closeLoginModal = () => setOpenLoginModal(false);
+    const closeRegisterModal = () => setOpenRegisterModal(false);
 
-    const handleLogin = (user) => {
-        setUsername(user); // Establecer el nombre de usuario
-        setIsLoggedIn(true); // Cambiar el estado de autenticación
-        closeLoginModal(); // Cerrar modal de login
+    const handleLogin = (user, isAdmin) => {
+        setUsername(user);
+        setIsLoggedIn(true);
+        setIsAdmin(isAdmin);
+        closeLoginModal();
     };
 
     const handleRegister = (user) => {
-        setUsername(user); 
-        setIsLoggedIn(true); 
-        closeRegisterModal(); 
+        setUsername(user);
+        setIsLoggedIn(true);
+        closeRegisterModal();
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // Eliminar el token de localStorage
-        localStorage.removeItem('username'); // Eliminar el token de localStorage
-        setIsLoggedIn(false); // Cambiar el estado de autenticación
-        setUsername(''); // Limpiar el nombre de usuario
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        setIsLoggedIn(false);
+        setUsername('');
     };
 
     return (
@@ -75,16 +70,13 @@ const NavbarComponent = () => {
                                     Hola! {username}
                                 </span>
 
-
                                 <Button
                                     onClick={handleLogout}
                                     className="py-1 px-2 text-white font-bold rounded-full bg-red-600 hover:bg-red-700 shadow-lg transition duration-200 ease-in-out"
-                                    style={{ backgroundColor: 'rgba(239, 68, 68)', color: 'white' }} // Asegúrate de que el color es rojo
+                                    style={{ backgroundColor: 'rgba(239, 68, 68)', color: 'white' }}
                                 >
                                     Logout
                                 </Button>
-
-
                             </>
                         ) : (
                             <Button
@@ -104,9 +96,13 @@ const NavbarComponent = () => {
                             <li>
                                 <Link to="/aboutus" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">About Us</Link>
                             </li>
+
                             <li>
-                                <Link to="/visualisation" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">Users Visualisation</Link>
+                                <Link to="/visualisation" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">
+                                    Users Visualisation
+                                </Link>
                             </li>
+
                         </ul>
                     </div>
                 </div>
@@ -117,7 +113,7 @@ const NavbarComponent = () => {
                 <Modal show={openLoginModal} size="md" popup onClose={closeLoginModal}>
                     <Modal.Header />
                     <Modal.Body>
-                        <LogIn closeModal={closeLoginModal} onLogin={handleLogin} /> {/* Pasar función de inicio de sesión */}
+                        <LogIn closeModal={closeLoginModal} onLogin={handleLogin} />
                         <p className="text-center mt-4">
                             ¿No tienes una cuenta?{" "}
                             <button

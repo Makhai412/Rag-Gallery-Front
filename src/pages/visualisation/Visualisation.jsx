@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Asegúrate de tener axios instalado
-import Modal from './ModalConfirm';
+import ModalConfirm from './ModalConfirm'; // Importar el ModalConfirm
 
 const Visualisation = () => {
   const [users, setUsers] = useState([]);
@@ -14,9 +14,8 @@ const Visualisation = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('http://localhost:8001/get-users/');
-        console.log(response.data);
         setUsers(response.data); // Set the data from the response
-        } catch (error) {
+      } catch (error) {
         console.error('Error fetching users:', error);
       }
     };
@@ -26,7 +25,7 @@ const Visualisation = () => {
 
   const openEditModal = (user) => {
     setSelectedUser(user);
-    setEditFormData({ role: user.role });
+    setEditFormData({ role: user.is_admin ? 'Administrador' : 'Usuario' });
     setIsEditModalOpen(true);
   };
 
@@ -42,18 +41,29 @@ const Visualisation = () => {
 
   const handleEditSubmit = async () => {
     try {
-      await axios.patch(`http://localhost:8001/change-role/${selectedUser.id}`, {
-        role: editFormData.role,
+      // Aquí el fetch ajustado
+      await fetch(`http://localhost:8001/change-role/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: selectedUser.uid, // El UID del usuario
+          is_admin: editFormData.role === 'Administrador', // Convirtiendo el rol a un valor booleano
+        }),
       });
 
+      // Actualizamos el rol en la lista de usuarios en el frontend
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.id === selectedUser.id ? { ...user, role: editFormData.role } : user
+          user.uid === selectedUser.uid ? { ...user, is_admin: editFormData.role === 'Administrador' } : user
         )
       );
+      showNotification('Rol actualizado exitosamente');
       closeEditModal();
     } catch (error) {
       console.error('Error updating user role:', error);
+      showNotification('Error al actualizar el rol');
     }
   };
 
@@ -85,6 +95,7 @@ const Visualisation = () => {
           </div>
         </div>
       )}
+
       <table className="table-auto w-full border-collapse border border-gray-300 mt-1">
         <thead>
           <tr className="bg-gray-200">
@@ -116,31 +127,41 @@ const Visualisation = () => {
       </table>
 
       {/* Modal for editing role */}
-      {isEditModalOpen && (
-        <Modal onClose={closeEditModal}>
-          <h2 className="text-xl font-semibold">Editar Rol del Usuario</h2>
-          <form onSubmit={handleEditSubmit} className="mt-4">
-            <label className="block mb-2">
-              Rol:
-              <select
-                name="role"
-                value={editFormData.role}
-                onChange={handleEditChange}
-                className="block w-full mt-1 p-2 border rounded"
-              >
-                <option value="Usuario">Usuario</option>
-                <option value="Administrador">Administrador</option>
-              </select>
-            </label>
+      <ModalConfirm
+        title="Editar Rol del Usuario"
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+      >
+        <form onSubmit={handleEditSubmit} className="mt-4">
+          <label className="block mb-2">
+            Rol:
+            <select
+              name="role"
+              value={editFormData.role}
+              onChange={handleEditChange}
+              className="block w-full mt-1 p-2 border rounded"
+            >
+              <option value="Usuario">Usuario</option>
+              <option value="Administrador">Administrador</option>
+            </select>
+          </label>
+          <div className="flex justify-between mt-4">
+            <button
+              type="button"
+              onClick={closeEditModal} // Cerrar el modal
+              className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded"
+            >
+              Cerrar
+            </button>
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded mt-4"
+              className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
             >
               Guardar Cambios
             </button>
-          </form>
-        </Modal>
-      )}
+          </div>
+        </form>
+      </ModalConfirm>
     </div>
   );
 };
