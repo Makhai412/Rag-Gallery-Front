@@ -11,15 +11,11 @@ const LogIn = ({ closeModal, onLogin }) => {
             const response = await api.post('/login/', { username, password });
             const { access_token } = response.data;
     
-            // Guardar el token en localStorage
             localStorage.setItem('token', access_token);
             localStorage.setItem('username', username);
 
     
-            // Llamar a la función onLogin para pasar el nombre de usuario al Navbar
             onLogin(username);
-    
-            // Cerrar el modal
             closeModal();
             
         } catch (err) {

@@ -10,27 +10,41 @@ const NavbarComponent = () => {
     const [openRegisterModal, setOpenRegisterModal] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
+    const [isadmin, SetIsadmin] = useState(false);
 
-    
+    console.log(isadmin);
+
+    const fetchUserData = async (username) => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8001/get-user/?username=${username}`);
+            const data = await response.json();
+            SetIsadmin(data.is_admin === true);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (username) {
+            fetchUserData(username);
+        }
+    }, [username]);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         const storedUsername = localStorage.getItem('username');
-        console.log(storedUsername);
+       
     
         if (token) {
-            // Si el token existe, considera al usuario como autenticado
             setIsLoggedIn(true);
-            // Si almacenas el username en localStorage o dentro del token, puedes actualizar el nombre de usuario
             if (storedUsername) {
                 setUsername(storedUsername);
             }
         } else {
-            // Si no hay token, el usuario no está logueado
             setIsLoggedIn(false);
             setUsername('');
         }
-    }, []); // El array vacío asegura que esto solo se ejecute al montar el componente
+    }, []); 
 
 
     const closeLoginModal = () => setOpenLoginModal(false);
@@ -39,7 +53,6 @@ const NavbarComponent = () => {
     const handleLogin = (user, isAdmin) => {
         setUsername(user);
         setIsLoggedIn(true);
-        setIsAdmin(isAdmin);
         closeLoginModal();
     };
 
@@ -96,12 +109,13 @@ const NavbarComponent = () => {
                             <li>
                                 <Link to="/aboutus" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">About Us</Link>
                             </li>
-
-                            <li>
-                                <Link to="/visualisation" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">
+                            {isadmin && (
+                                <li>
+                                     <Link to="/visualisation" className="block py-1 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500">
                                     Users Visualisation
                                 </Link>
-                            </li>
+                                </li>
+                            )}
 
                         </ul>
                     </div>
